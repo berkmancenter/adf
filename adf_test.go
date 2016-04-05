@@ -21,6 +21,7 @@ func TestRun(t *testing.T) {
 		adf := New(test.series, test.pvalue, test.lag)
 		adf.Run()
 		observed := adf.IsStationary()
+		//fmt.Printf("Expected: %v; Stat: %v; Lag: %v\n", test.expected, adf.Statistic, adf.Lag)
 
 		if observed != test.expected {
 			filename := "test_" + strconv.Itoa(i+1) + ".png"
@@ -71,4 +72,12 @@ func xys(series []float64) plotter.XYs {
 		pts[i].Y = v
 	}
 	return pts
+}
+
+func BenchmarkRun(b *testing.B) {
+	test := testCases[4]
+	for i := 0; i < b.N; i++ {
+		adf := New(test.series, test.pvalue, test.lag)
+		adf.Run()
+	}
 }
