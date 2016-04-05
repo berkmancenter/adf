@@ -15,22 +15,25 @@ import (
 
 func TestRun(t *testing.T) {
 	for i, test := range testCases {
-		adf := New(test.series, test.pvalue)
+		if test.skip {
+			continue
+		}
+		adf := New(test.series, test.pvalue, test.lag)
 		adf.Run()
 		observed := adf.IsStationary()
 
-		filename := "test_" + strconv.Itoa(i+1) + ".png"
-		plotSeries(test.series, test.name, filename)
-		csvf, err := os.Create("test_" + strconv.Itoa(i+1) + ".csv")
-		if err != nil {
-			panic(err)
-		}
-		w := csv.NewWriter(csvf)
-		for _, v := range test.series {
-			w.Write([]string{fmt.Sprint(v)})
-		}
-		w.Flush()
 		if observed != test.expected {
+			filename := "test_" + strconv.Itoa(i+1) + ".png"
+			plotSeries(test.series, test.name, filename)
+			csvf, err := os.Create("test_" + strconv.Itoa(i+1) + ".csv")
+			if err != nil {
+				panic(err)
+			}
+			w := csv.NewWriter(csvf)
+			for _, v := range test.series {
+				w.Write([]string{fmt.Sprint(v)})
+			}
+			w.Flush()
 			t.Errorf("Failed %v. "+
 				"Expected: %v but got %v with stat %v and p-value %v. See %v",
 				test.name, test.expected, observed, adf.Statistic,

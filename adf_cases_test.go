@@ -7,6 +7,8 @@ import (
 
 type testCase struct {
 	name     string
+	skip     bool
+	lag      int
 	series   []float64
 	pvalue   float64
 	expected bool
@@ -17,29 +19,34 @@ var testCases = []testCase{
 		name:     "stationary",
 		series:   genStationary(),
 		pvalue:   -3.45,
+		lag:      0,
 		expected: true,
 	},
 	{
 		name:     "with linear trend",
 		series:   genNonstationary(1),
+		lag:      0,
 		pvalue:   -3.45,
 		expected: false,
 	},
 	{
 		name:     "with decreasing linear trend",
 		series:   genNonstationary(-1),
+		lag:      0,
 		pvalue:   -3.45,
 		expected: false,
 	},
 	{
 		name:     "stationary periodic",
 		series:   genPeriodicStationary(),
+		lag:      0,
 		pvalue:   -3.45,
 		expected: true,
 	},
 	{
 		name:     "periodic with linear trend",
 		series:   genPeriodicNonstationary(),
+		lag:      0,
 		pvalue:   -3.45,
 		expected: false,
 	},
@@ -47,6 +54,7 @@ var testCases = []testCase{
 		name:     "with linear trend and outlier",
 		series:   genNonstationaryWithOutlier(),
 		pvalue:   -3.45,
+		lag:      0,
 		expected: false,
 	},
 }
