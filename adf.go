@@ -26,21 +26,23 @@ func New(series []float64, pvalue float64, lag int) *ADF {
 	if pvalue == 0 {
 		pvalue = DefaultPValue
 	}
+	if lag < 0 {
+		lag = int(math.Floor(math.Cbrt(float64(len(series)))))
+	}
+	newSeries := make([]float64, len(series))
+	copy(newSeries, series)
+	return &ADF{Series: newSeries, PValueThreshold: pvalue, Lag: lag}
+}
+
+// Run runs the Augmented Dickey-Fuller test.
+func (adf *ADF) Run() {
+	series := adf.Series
 	mean := stat.Mean(series, nil)
 	if mean != 0.0 {
 		for i, v := range series {
 			series[i] = v - mean
 		}
 	}
-	if lag < 0 {
-		lag = int(math.Floor(math.Cbrt(float64(len(series)))))
-	}
-	return &ADF{Series: series, PValueThreshold: pvalue, Lag: lag}
-}
-
-// Run runs the Augmented Dickey-Fuller test.
-func (adf *ADF) Run() {
-	series := adf.Series
 	n := len(series) - 1
 	y := diff(series)
 	lag := adf.Lag
@@ -78,13 +80,6 @@ func (adf ADF) IsStationary() bool {
 	return adf.Statistic < adf.PValueThreshold
 }
 
-func (adf ADF) ZeroPaddedDiff() []float64 {
-	d := make([]float64, len(adf.Series))
-	d[0] = 0
-	d = append(d, diff(adf.Series)...)
-	return d
-}
-
 func diff(x []float64) []float64 {
 	y := make([]float64, len(x)-1)
 	for i := 0; i < len(x)-1; i++ {
@@ -102,20 +97,4 @@ func laggedMatrix(series []float64, lag int) *mat64.Dense {
 		}
 	}
 	return m
-}
-
-func sequence(start, end int) []float64 {
-	seq := make([]float64, end-start+1)
-	for i := start; i <= end; i++ {
-		seq[i-start] = float64(i)
-	}
-	return seq
-}
-
-func ones(num int) []float64 {
-	seq := make([]float64, num)
-	for i := range seq {
-		seq[i] = 1
-	}
-	return seq
 }
