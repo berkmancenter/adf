@@ -1,4 +1,6 @@
-// Package adf implements the Augmented Dickey-Fuller test.
+// Package adf implements the Augmented Dickey-Fuller test. This is a port of
+// the implementation of adf given here:
+// https://github.com/Netflix/Surus/blob/master/src/main/java/org/surus/math/AugmentedDickeyFuller.java.
 package adf
 
 import (
@@ -10,15 +12,16 @@ import (
 )
 
 const (
-	LPenalty      = 0.0001
-	DefaultPValue = -3.45
+	LPenalty      = 0.0001 // L penalty to pass to ridge regression
+	DefaultPValue = -3.45  // Test p-value threshold
 )
 
+// An instance of an ADF test
 type ADF struct {
-	Series          []float64
-	PValueThreshold float64
-	Statistic       float64
-	Lag             int
+	Series          []float64 // The time series to test
+	PValueThreshold float64   // The p-value threshold for the test
+	Statistic       float64   // The test statistic
+	Lag             int       // The lag to use when running the test
 }
 
 // New creates and returns a new ADF test.
@@ -76,6 +79,7 @@ func (adf *ADF) Run() {
 	adf.Statistic = beta[0] / sd[0]
 }
 
+// IsStationary returns true if the tested time series is stationary.
 func (adf ADF) IsStationary() bool {
 	return adf.Statistic < adf.PValueThreshold
 }
