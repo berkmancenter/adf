@@ -6,7 +6,7 @@ language: go
 go:
  - 1.5.4
  - 1.6.3
- - 1.7.3
+ - 1.7
 
 os:
  - linux
@@ -41,6 +41,6 @@ install:
 
 script:
  - source ${TRAVIS_BUILD_DIR}/.travis/$TRAVIS_OS_NAME/$BLAS_LIB/test.sh
- - test -z "$(gofmt -d .)"
+ - diff <(gofmt -d .) <("")
  # This is run last since it alters the tree.
  - ${TRAVIS_BUILD_DIR}/.travis/check-generate.sh

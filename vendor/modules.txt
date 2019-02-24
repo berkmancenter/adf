@@ -1,3 +1,5 @@
+# bitbucket.org/zombiezen/gopdf v0.0.0-20150317163809-1c63dc69751b
+bitbucket.org/zombiezen/gopdf/pdf
 # github.com/ajstarks/svgo v0.0.0-20181006003313-6ce6a3bcf6cd
 github.com/ajstarks/svgo
 # github.com/berkmancenter/ridge v0.0.0-20160817211126-84766bc56b56
@@ -6,17 +8,16 @@ github.com/berkmancenter/ridge
 github.com/golang/freetype
 github.com/golang/freetype/truetype
 github.com/golang/freetype/raster
-# github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac
+# github.com/gonum/blas v0.0.0-20160815674243-447542bc23b84f8daa64470951a57bb6713d15a1
 github.com/gonum/blas
 github.com/gonum/blas/blas64
 github.com/gonum/blas/native
 github.com/gonum/blas/native/internal/math32
-# github.com/gonum/floats v0.0.0-20181209220543-c233463c7e82
+# github.com/gonum/floats v0.0.0-20160816220543-e7dfbda930c8a40d6d1ba9107762aae3e6e47591
 github.com/gonum/floats
-# github.com/gonum/internal v0.0.0-20181124074243-f884aa714029
-github.com/gonum/internal/asm/f64
-github.com/gonum/internal/asm/f32
-# github.com/gonum/lapack v0.0.0-20181123203213-e4cdc5a0bff9
+# github.com/gonum/internal v0.0.0-20160815674243-495c8ab446bf60264be32be6973302faac6a5695
+github.com/gonum/internal/asm
+# github.com/gonum/lapack v0.0.0-20170816203213-eef8e925c0cdfcb9b5d17a569aeef6de0f8972f4
 github.com/gonum/lapack
 github.com/gonum/lapack/lapack64
 github.com/gonum/lapack/native

@@ -22,12 +22,15 @@ func (Implementation) Dpotf2(ul blas.Uplo, n int, a []float64, lda int) (ok bool
 	if ul != blas.Upper && ul != blas.Lower {
 		panic(badUplo)
 	}
-	checkMatrix(n, n, a, lda)
-
+	if n < 0 {
+		panic(nLT0)
+	}
+	if lda < n {
+		panic(badLdA)
+	}
 	if n == 0 {
 		return true
 	}
-
 	bi := blas64.Implementation()
 	if ul == blas.Upper {
 		for j := 0; j < n; j++ {

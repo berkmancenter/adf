@@ -11,56 +11,33 @@ import (
 
 // Dorgql generates the m×n matrix Q with orthonormal columns defined as the
 // last n columns of a product of k elementary reflectors of order m
-//  Q = H_{k-1} * ... * H_1 * H_0.
-//
-// It must hold that
-//  0 <= k <= n <= m,
-// and Dorgql will panic otherwise.
-//
-// On entry, the (n-k+i)-th column of A must contain the vector which defines
-// the elementary reflector H_i, for i=0,...,k-1, and tau[i] must contain its
-// scalar factor. On return, a contains the m×n matrix Q.
+//  Q = H_{k-1} * ... * H_1 * H_0
+// as returned by Dgelqf. See Dgelqf for more information.
 //
 // tau must have length at least k, and Dorgql will panic otherwise.
 //
-// work must have length at least max(1,lwork), and lwork must be at least
-// max(1,n), otherwise Dorgql will panic. For optimum performance lwork must
-// be a sufficiently large multiple of n.
-//
+// work is temporary storage, and lwork specifies the usable memory length. At minimum,
+// lwork >= n, and Dorgql will panic otherwise. The amount of blocking is
+// limited by the usable length.
 // If lwork == -1, instead of computing Dorgql the optimal work length is stored
 // into work[0].
 //
 // Dorgql is an internal routine. It is exported for testing purposes.
 func (impl Implementation) Dorgql(m, n, k int, a []float64, lda int, tau, work []float64, lwork int) {
-	switch {
-	case n < 0:
-		panic(nLT0)
-	case m < n:
-		panic(mLTN)
-	case k < 0:
-		panic(kLT0)
-	case k > n:
-		panic(kGTN)
-	case lwork < max(1, n) && lwork != -1:
-		panic(badWork)
-	case len(work) < lwork:
-		panic(shortWork)
+	checkMatrix(m, n, a, lda)
+	if len(tau) < k {
+		panic(badTau)
 	}
-	if lwork != -1 {
-		checkMatrix(m, n, a, lda)
-		if len(tau) < k {
-			panic(badTau)
-		}
-	}
-
-	if n == 0 {
-		work[0] = 1
+	nb := impl.Ilaenv(1, "DORGQL", " ", m, n, k, -1)
+	lworkopt := n * nb
+	work[0] = float64(lworkopt)
+	if lwork == -1 {
 		return
 	}
-
-	nb := impl.Ilaenv(1, "DORGQL", " ", m, n, k, -1)
-	if lwork == -1 {
-		work[0] = float64(n * nb)
+	if lwork < n {
+		panic(badWork)
+	}
+	if n == 0 {
 		return
 	}
 
@@ -72,6 +49,7 @@ func (impl Implementation) Dorgql(m, n, k int, a []float64, lda int, tau, work [
 		nx = max(0, impl.Ilaenv(3, "DORGQL", " ", m, n, k, -1))
 		if nx < k {
 			// Determine if workspace is large enough for blocked code.
+			ldwork = nb
 			iws = n * nb
 			if lwork < iws {
 				// Not enough workspace to use optimal nb: reduce nb and determine
@@ -79,7 +57,6 @@ func (impl Implementation) Dorgql(m, n, k int, a []float64, lda int, tau, work [
 				nb = lwork / n
 				nbmin = max(2, impl.Ilaenv(2, "DORGQL", " ", m, n, k, -1))
 			}
-			ldwork = nb
 		}
 	}
 
@@ -126,5 +103,4 @@ func (impl Implementation) Dorgql(m, n, k int, a []float64, lda int, tau, work [
 			}
 		}
 	}
-	work[0] = float64(iws)
 }

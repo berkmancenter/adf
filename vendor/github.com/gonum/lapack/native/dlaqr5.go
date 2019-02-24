@@ -66,7 +66,7 @@ import (
 // wv and ldwv represent an auxiliary matrix of size nv×(3*nshfts-3).
 //
 // Dlaqr5 is an internal routine. It is exported for testing purposes.
-func (impl Implementation) Dlaqr5(wantt, wantz bool, kacc22 int, n, ktop, kbot, nshfts int, sr, si []float64, h []float64, ldh int, iloz, ihiz int, z []float64, ldz int, v []float64, ldv int, u []float64, ldu int, nv int, wv []float64, ldwv int, nh int, wh []float64, ldwh int) {
+func (impl Implementation) Dlaqr5(wantt, wantz bool, kacc22 int, n, ktop, kbot, nshfts int, sr, si []float64, h []float64, ldh int, iloz, ihiz int, z []float64, ldz int, v []float64, ldv int, u []float64, ldu int, nh int, wh []float64, ldwh int, nv int, wv []float64, ldwv int) {
 	checkMatrix(n, n, h, ldh)
 	if ktop < 0 || n <= ktop {
 		panic("lapack: invalid value of ktop")
@@ -97,8 +97,8 @@ func (impl Implementation) Dlaqr5(wantt, wantz bool, kacc22 int, n, ktop, kbot, 
 	}
 	checkMatrix(nshfts/2, 3, v, ldv) // Transposed w.r.t. lapack.
 	checkMatrix(3*nshfts-3, 3*nshfts-3, u, ldu)
-	checkMatrix(nv, 3*nshfts-3, wv, ldwv)
 	checkMatrix(3*nshfts-3, nh, wh, ldwh)
+	checkMatrix(nv, 3*nshfts-3, wv, ldwv)
 	if kacc22 != 0 && kacc22 != 1 && kacc22 != 2 {
 		panic("lapack: invalid value of kacc22")
 	}
@@ -124,8 +124,9 @@ func (impl Implementation) Dlaqr5(wantt, wantz bool, kacc22 int, n, ktop, kbot, 
 	}
 
 	// Note: lapack says that nshfts must be even but allows it to be odd
-	// anyway. We panic above if nshfts is not even, so reducing it by one
-	// is unnecessary. The only caller Dlaqr04 uses only even nshfts.
+	// anyway. At the moment, we panic above if nshfts is not even, so
+	// reducing it by one is unnecessary (it seems that Dlaqr0 and Dlaqr4
+	// indeed use only even nshfts).
 	//
 	// The original comment and code from lapack-3.6.0/SRC/dlaqr5.f:341:
 	// *     ==== NSHFTS is supposed to be even, but if it is odd,

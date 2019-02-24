@@ -10,10 +10,9 @@ import (
 	"github.com/gonum/lapack"
 )
 
-// Dlasrt sorts the numbers in the input slice d. If s == lapack.SortIncreasing,
-// the elements are sorted in increasing order. If s == lapack.SortDecreasing,
-// the elements are sorted in decreasing order. For other values of s Dlasrt
-// will panic.
+// Dlasrt sorts the numbers in the input slice d. If sort == lapack.SortIncreasing,
+// the elements are sorted in increasing order. If sort == lapack.SortDecreasing,
+// the elements are sorted in decreasing order.
 //
 // Dlasrt is an internal routine. It is exported for testing purposes.
 func (impl Implementation) Dlasrt(s lapack.Sort, n int, d []float64) {
@@ -21,7 +20,7 @@ func (impl Implementation) Dlasrt(s lapack.Sort, n int, d []float64) {
 	d = d[:n]
 	switch s {
 	default:
-		panic(badSort)
+		panic("lapack: bad sort")
 	case lapack.SortIncreasing:
 		sort.Float64s(d)
 	case lapack.SortDecreasing:

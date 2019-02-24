@@ -26,30 +26,27 @@ import (
 // Dsteqr will panic otherwise.
 //
 // z, on entry, contains the n×n orthogonal matrix used in the reduction to
-// tridiagonal form if compz == lapack.OriginalEV. On exit, if
-// compz == lapack.OriginalEV, z contains the orthonormal eigenvectors of the
-// original symmetric matrix, and if compz == lapack.TridiagEV, z contains the
+// tridiagonal form if compz == lapack.EigDecomp. On exit, if
+// compz == lapack.EigBoth, z contains the orthonormal eigenvectors of the
+// original symmetric matrix, and if compz == lapack.EigDecomp, z contains the
 // orthonormal eigenvectors of the symmetric tridiagonal matrix. z is not used
-// if compz == lapack.None.
+// if compz == lapack.EigValueOnly.
 //
 // work must have length at least max(1, 2*n-2) if the eigenvectors are computed,
 // and Dsteqr will panic otherwise.
 //
 // Dsteqr is an internal routine. It is exported for testing purposes.
-func (impl Implementation) Dsteqr(compz lapack.EVComp, n int, d, e, z []float64, ldz int, work []float64) (ok bool) {
-	if n < 0 {
-		panic(nLT0)
-	}
+func (impl Implementation) Dsteqr(compz lapack.EigComp, n int, d, e, z []float64, ldz int, work []float64) (ok bool) {
 	if len(d) < n {
 		panic(badD)
 	}
 	if len(e) < n-1 {
 		panic(badE)
 	}
-	if compz != lapack.None && compz != lapack.TridiagEV && compz != lapack.OriginalEV {
-		panic(badEVComp)
+	if compz != lapack.EigValueOnly && compz != lapack.EigBoth && compz != lapack.EigDecomp {
+		panic(badEigComp)
 	}
-	if compz != lapack.None {
+	if compz != lapack.EigValueOnly {
 		if len(work) < max(1, 2*n-2) {
 			panic(badWork)
 		}
@@ -57,9 +54,9 @@ func (impl Implementation) Dsteqr(compz lapack.EVComp, n int, d, e, z []float64,
 	}
 
 	var icompz int
-	if compz == lapack.OriginalEV {
+	if compz == lapack.EigDecomp {
 		icompz = 1
-	} else if compz == lapack.TridiagEV {
+	} else if compz == lapack.EigBoth {
 		icompz = 2
 	}
 
@@ -162,13 +159,14 @@ func (impl Implementation) Dsteqr(compz lapack.EVComp, n int, d, e, z []float64,
 			continue
 		case anorm > ssfmax:
 			iscale = down
-			// Pretend that d and e are matrices with 1 column.
-			impl.Dlascl(lapack.General, 0, 0, anorm, ssfmax, lend-l+1, 1, d[l:], 1)
-			impl.Dlascl(lapack.General, 0, 0, anorm, ssfmax, lend-l, 1, e[l:], 1)
+			// TODO(btracey): Why is lda n?
+			impl.Dlascl(lapack.General, 0, 0, anorm, ssfmax, lend-l+1, 1, d[l:], n)
+			impl.Dlascl(lapack.General, 0, 0, anorm, ssfmax, lend-l, 1, e[l:], n)
 		case anorm < ssfmin:
 			iscale = up
-			impl.Dlascl(lapack.General, 0, 0, anorm, ssfmin, lend-l+1, 1, d[l:], 1)
-			impl.Dlascl(lapack.General, 0, 0, anorm, ssfmin, lend-l, 1, e[l:], 1)
+			// TODO(btracey): Why is lda n?
+			impl.Dlascl(lapack.General, 0, 0, anorm, ssfmin, lend-l+1, 1, d[l:], n)
+			impl.Dlascl(lapack.General, 0, 0, anorm, ssfmin, lend-l, 1, e[l:], n)
 		}
 
 		// Choose between QL and QR.
@@ -352,12 +350,11 @@ func (impl Implementation) Dsteqr(compz lapack.EVComp, n int, d, e, z []float64,
 		// Undo scaling if necessary.
 		switch iscale {
 		case down:
-			// Pretend that d and e are matrices with 1 column.
-			impl.Dlascl(lapack.General, 0, 0, ssfmax, anorm, lendsv-lsv+1, 1, d[lsv:], 1)
-			impl.Dlascl(lapack.General, 0, 0, ssfmax, anorm, lendsv-lsv, 1, e[lsv:], 1)
+			impl.Dlascl(lapack.General, 0, 0, ssfmax, anorm, lendsv-lsv+1, 1, d[lsv:], n)
+			impl.Dlascl(lapack.General, 0, 0, ssfmax, anorm, lendsv-lsv, 1, e[lsv:], n)
 		case up:
-			impl.Dlascl(lapack.General, 0, 0, ssfmin, anorm, lendsv-lsv+1, 1, d[lsv:], 1)
-			impl.Dlascl(lapack.General, 0, 0, ssfmin, anorm, lendsv-lsv, 1, e[lsv:], 1)
+			impl.Dlascl(lapack.General, 0, 0, ssfmin, anorm, lendsv-lsv+1, 1, d[lsv:], n)
+			impl.Dlascl(lapack.General, 0, 0, ssfmin, anorm, lendsv-lsv, 1, e[lsv:], n)
 		}
 
 		// Check for no convergence to an eigenvalue after a total of n*maxit iterations.
