@@ -1,6 +1,8 @@
 adf
 ===
 
+This fork adds vendoring to the original repo.
+
 [![GoDoc](https://godoc.org/github.com/berkmancenter/adf?status.png)](https://godoc.org/github.com/berkmancenter/adf)
 
 ADF is a Go library for running the Augmented Dickey-Fuller test on data to determine stationarity.
